@@ -5,7 +5,7 @@ import {useAuth} from '../contexts/AuthContext'
 import GoogleButton from "react-google-button";
 
 export default function Login(){
-    const emailRef = useRef()
+    
     const passwordRef= useRef()
     const {login,googleSignIn} = useAuth()
     const [error, setError] = useState('')
