@@ -7,9 +7,9 @@ import { db, auth } from "../firebase";
 import { collection, getDocs, where, query } from "firebase/firestore";
 
 export default function Login() {
-  const emailRef = useRef();
+  const [email, setEmail] = useState("");
   const [userName, setUserName] = useState(null);
-  const passwordRef = useRef();
+  const [password, setPassword] = useState("");
   const { login, googleSignIn, googleSignOut } = useAuth();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,61 +30,47 @@ export default function Login() {
   };
   async function handleSubmit(e) {
     e.preventDefault();
+    if (email === "") {
+      try {
+        setError("");
+        setLoading(true);
+        const q = query(
+          collection(db, "RegistrationInfo"),
+          where("userName", "==", userName)
+        );
 
-    try {
-      setError("");
-      setLoading(true);
-      const q = query(
-        collection(db, "RegistrationInfo"),
-        where("userName", "==", userName)
-      );
+        const querySnapshot = await getDocs(q);
 
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        console.log("No matching documents.");
-        setError("No matching username");
-        return;
-      } else {
-        querySnapshot.forEach((doc) => {
-          console.log(doc.id, "=>", doc.data());
-          console.log("tesrt");
-          for (var i = 0; i < userids.length; i++) {
-            if (doc.data()["userName"].search(userids[i]) === 0) {
-              navigate(`/${userids[i]}`);
+        if (querySnapshot.empty) {
+          console.log("No matching documents.");
+          setError("No matching username");
+          return;
+        } else {
+          querySnapshot.forEach((doc) => {
+            console.log(doc.id, "=>", doc.data());
+            console.log("tesrt");
+            for (var i = 0; i < userids.length; i++) {
+              if (doc.data()["userName"].search(userids[i]) === 0) {
+                navigate(`/${userids[i]}`);
+              }
             }
-          }
-        });
+          });
+        }
+      } catch (e) {
+        console.log(e);
+        setError("Failed to sign in");
       }
-      // if (exampleids.includes(userName)) {
-      //   for (var i = 0; i < userids.length; i++) {
-      //     if (userName.search(userids[i]) === 0) {
-      //       navigate(`/${userids[i]}`);
-      //     }
-      //   }
-      // }
-      // else {
-      //   setError("Invalid credentials");
-      // }
-
-      // await login(emailRef.current.value, passwordRef.current.value);
-      // navigate("/");
-    } catch (e) {
-      console.log(e);
-      setError("Failed to sign in");
-    }
-    setLoading(false);
+      setLoading(false);
+    } else handleSubmit2();
   }
 
-  async function handleSubmit2(e) {
-    e.preventDefault();
-
+  async function handleSubmit2() {
     try {
       setError("");
       setLoading(true);
       const q = query(
         collection(db, "RegistrationInfo"),
-        where("email", "==", emailRef.current.value)
+        where("email", "==", email)
       );
 
       const querySnapshot = await getDocs(q);
@@ -104,19 +90,6 @@ export default function Login() {
           }
         });
       }
-      // if (exampleids.includes(userName)) {
-      //   for (var i = 0; i < userids.length; i++) {
-      //     if (userName.search(userids[i]) === 0) {
-      //       navigate(`/${userids[i]}`);
-      //     }
-      //   }
-      // }
-      // else {
-      //   setError("Invalid credentials");
-      // }
-
-      // await login(emailRef.current.value, passwordRef.current.value);
-      // navigate("/");
     } catch (e) {
       console.log(e);
       setError("Failed to sign in");
@@ -130,10 +103,13 @@ export default function Login() {
         <Card.Body>
           <h2 className="text-center mb-4">Log In</h2>
           {error && <Alert variant="danger">{error}</Alert>}
-          <Form onSubmit={handleSubmit2}>
+          <Form>
             <Form.Group id="email">
               <Form.Label>Email</Form.Label>
-              <Form.Control type="email" ref={emailRef}></Form.Control>
+              <Form.Control
+                type="email"
+                onChange={(e) => setEmail(e.target.value)}
+              ></Form.Control>
             </Form.Group>
             or
             <Form.Group id="username">
@@ -152,12 +128,17 @@ export default function Login() {
               <Form.Label>Password</Form.Label>
               <Form.Control
                 type="password"
-                ref={passwordRef}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               ></Form.Control>
             </Form.Group>
             <br />
-            <Button disabled={loading} type="submit" className="w-100">
+            <Button
+              disabled={loading}
+              type="submit"
+              className="w-100"
+              onClick={handleSubmit}
+            >
               Login
             </Button>
             <Form.Group>
