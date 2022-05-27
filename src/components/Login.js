@@ -3,6 +3,8 @@ import { Form, Button, Card, Alert } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import GoogleButton from "react-google-button";
+import { db, auth } from "../firebase";
+import { collection, getDocs, where, query } from "firebase/firestore";
 
 export default function Login() {
   const emailRef = useRef();
@@ -22,7 +24,6 @@ export default function Login() {
     try {
       googleSignOut();
       await googleSignIn();
-      navigate("/");
     } catch (error) {
       console.log(error.message);
     }
@@ -33,15 +34,86 @@ export default function Login() {
     try {
       setError("");
       setLoading(true);
-      if (exampleids.includes(userName)) {
-        for (var i = 0; i < userids.length; i++) {
-          if (userName.search(userids[i]) === 0) {
-            navigate(`/${userids[i]}`);
-          }
-        }
+      const q = query(
+        collection(db, "RegistrationInfo"),
+        where("userName", "==", userName)
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        console.log("No matching documents.");
+        setError("No matching username");
+        return;
       } else {
-        setError("Invalid credentials");
+        querySnapshot.forEach((doc) => {
+          console.log(doc.id, "=>", doc.data());
+          console.log("tesrt");
+          for (var i = 0; i < userids.length; i++) {
+            if (doc.data()["userName"].search(userids[i]) === 0) {
+              navigate(`/${userids[i]}`);
+            }
+          }
+        });
       }
+      // if (exampleids.includes(userName)) {
+      //   for (var i = 0; i < userids.length; i++) {
+      //     if (userName.search(userids[i]) === 0) {
+      //       navigate(`/${userids[i]}`);
+      //     }
+      //   }
+      // }
+      // else {
+      //   setError("Invalid credentials");
+      // }
+
+      // await login(emailRef.current.value, passwordRef.current.value);
+      // navigate("/");
+    } catch (e) {
+      console.log(e);
+      setError("Failed to sign in");
+    }
+    setLoading(false);
+  }
+
+  async function handleSubmit2(e) {
+    e.preventDefault();
+
+    try {
+      setError("");
+      setLoading(true);
+      const q = query(
+        collection(db, "RegistrationInfo"),
+        where("email", "==", emailRef.current.value)
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        console.log("No matching documents.");
+        setError("No matching username");
+        return;
+      } else {
+        querySnapshot.forEach((doc) => {
+          console.log(doc.id, "=>", doc.data());
+          console.log("tesrt");
+          for (var i = 0; i < userids.length; i++) {
+            if (doc.data()["userName"].search(userids[i]) === 0) {
+              navigate(`/${userids[i]}`);
+            }
+          }
+        });
+      }
+      // if (exampleids.includes(userName)) {
+      //   for (var i = 0; i < userids.length; i++) {
+      //     if (userName.search(userids[i]) === 0) {
+      //       navigate(`/${userids[i]}`);
+      //     }
+      //   }
+      // }
+      // else {
+      //   setError("Invalid credentials");
+      // }
 
       // await login(emailRef.current.value, passwordRef.current.value);
       // navigate("/");
@@ -58,7 +130,7 @@ export default function Login() {
         <Card.Body>
           <h2 className="text-center mb-4">Log In</h2>
           {error && <Alert variant="danger">{error}</Alert>}
-          <Form onSubmit={handleSubmit}>
+          <Form onSubmit={handleSubmit2}>
             <Form.Group id="email">
               <Form.Label>Email</Form.Label>
               <Form.Control type="email" ref={emailRef}></Form.Control>

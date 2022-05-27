@@ -4,7 +4,9 @@ import { Form, Alert } from "react-bootstrap";
 import { Button } from "react-bootstrap";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
-import {useAuth} from '../contexts/AuthContext'
+import { useAuth } from "../contexts/AuthContext";
+import { db, auth } from "../firebase";
+import { collection, getDocs, where, query } from "firebase/firestore";
 
 const PhoneSignUp = () => {
   const [error, setError] = useState("");
@@ -14,6 +16,7 @@ const PhoneSignUp = () => {
   const [result, setResult] = useState("");
   const { setUpRecaptha } = useAuth();
   const navigate = useNavigate();
+  const userids = ["asha", "sr", "fr", "phc"];
 
   const getOtp = async (e) => {
     e.preventDefault();
@@ -36,7 +39,28 @@ const PhoneSignUp = () => {
     if (otp === "" || otp === null) return;
     try {
       await result.confirm(otp);
-      navigate("/");
+      const q = query(
+        collection(db, "RegistrationInfo"),
+        where("phoneNo", "==", number)
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        console.log("No matching documents.");
+        setError("No matching username");
+        return;
+      } else {
+        querySnapshot.forEach((doc) => {
+          console.log(doc.id, "=>", doc.data());
+          console.log("tesrt");
+          for (var i = 0; i < userids.length; i++) {
+            if (doc.data()["userName"].search(userids[i]) === 0) {
+              navigate(`/${userids[i]}`);
+            }
+          }
+        });
+      }
     } catch (err) {
       setError(err.message);
     }
@@ -45,7 +69,7 @@ const PhoneSignUp = () => {
   return (
     <>
       <div className="p-4 box">
-        <h2 className="mb-3">Register using phone number</h2>
+        <h2 className="mb-3">Login using phone number</h2>
         {error && <Alert variant="danger">{error}</Alert>}
         <Form onSubmit={getOtp} style={{ display: !flag ? "block" : "none" }}>
           <Form.Group className="mb-3" controlId="formBasicEmail">

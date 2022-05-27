@@ -22,6 +22,7 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState();
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const userids = ["asha", "sr", "fr", "phc"];
 
   function signup(email, password) {
     createUserWithEmailAndPassword(auth, email, password);
@@ -60,8 +61,13 @@ export function AuthProvider({ children }) {
         } else {
           querySnapshot.forEach((doc) => {
             console.log(doc.id, "=>", doc.data());
+            console.log("tesrt");
+            for (var i = 0; i < userids.length; i++) {
+              if (doc.data()["userName"].search(userids[i]) === 0) {
+                navigate(`/${userids[i]}`);
+              }
+            }
           });
-          navigate("/", { state: { email: user.email } });
         }
       })
     );
