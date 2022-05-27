@@ -108,16 +108,7 @@ function RegistrationForm() {
                   <Form.Control className="form__input" type="password" id="confirmPassword" onChange = {(e) => handleInputChange(e)} placeholder="Confirm Password"/>
               </div>
           </div>
-        <Button type="submit" onClick={()=>handleSubmit()}>Register using mail ID</Button> 
-        <Form.Group>
-        <Link to="/phonesignup">
-          <div className="d-grid gap-2 mt-3">
-            <Button variant="success" type="Submit">
-              Sign in with Phone
-            </Button>
-          </div>
-        </Link>
-        </Form.Group>   
+        <Button type="submit" onClick={()=>handleSubmit()}>Register</Button>  
         
         </div>
     )       

@@ -2,7 +2,7 @@ import React, { Component, useEffect, useState } from 'react';
 import Header from './header';
 import './style.css'
 import {collection, query, where, getDocs,deleteDoc } from "firebase/firestore";
-import { auth, db } from '../../firebase-config';
+import { auth, db } from '../firebase';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Dropdown  from 'react-bootstrap/Dropdown';
@@ -13,13 +13,14 @@ function UserList() {
     const [postLists, setPostList] = useState([]);
     const postColectionRef = collection(db, 'RegistrationInfo');
 
-    // useEffect(() => {
-    //     const getPosts = async() =>{
-    //         const data = await getDocs(postColectionRef);
-    //         setPostList(data.docs.map((doc) => ({...doc.data(), id: doc.id})));
-    //     };
-    //     getPosts();
-    // });
+    useEffect(() => {
+        const getPosts = async() =>{
+            const data = await getDocs(postColectionRef);
+            console.log(data)
+            setPostList(data.docs.map((doc) => ({...doc.data(), id: doc.id})));
+        };
+        getPosts();
+    },[]);
     const deleteuser = (id) =>{
 console.log('user to delete ',id)
 
